@@ -14,7 +14,7 @@ class UserController {
     });
 
     try {
-      schema.validateSync(require.body, { abortEarly: false });
+      schema.validateSync(request.body, { abortEarly: false });
     } catch (err) {
       return response.status(400).json({ error: err.errors });
     }
