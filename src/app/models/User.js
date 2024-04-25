@@ -1,5 +1,4 @@
 import Sequelize, { Model } from 'sequelize';
-
 import bcrypt from 'bcrypt';
 
 class User extends Model {
@@ -26,7 +25,7 @@ class User extends Model {
   }
 
   async checkPassword(password) {
-    bcrypt.compare(password, this.password_hash);
+    return bcrypt.compare(password, this.password_hash);
   }
 }
 

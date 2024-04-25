@@ -1,50 +1,40 @@
 import * as Yup from 'yup';
-import jwt from 'jsonwebtoken';
-import User from '../models/User';
+import Jwt from 'jsonwebtoken';
 import authConfig from '../../config/auth';
+import User from '../models/User';
 
 class SessionController {
   async store(request, response) {
-    const schema = Yup.object({
-      email: Yup.string().email().required(),
-      password: Yup.string().min(6).required(),
+    const schema = Yup.object().shape({
+      email: Yup.string().required(),
+      password: Yup.string().required(),
     });
 
-    const isValid = await schema.isValid(request.body);
-
-    const emailOrPasswordIncorrect = () =>
-      response
+    if (!(await schema.isValid(request.body))) {
+      return response
         .status(401)
-        .json({ error: 'Make sure email or password are correct' });
-
-    if (!isValid) {
-      return emailOrPasswordIncorrect();
+        .json({ error: 'Make sure your password or email are correct' });
     }
 
     const { email, password } = request.body;
 
     const user = await User.findOne({
-      where: {
-        email,
-      },
+      where: { email },
     });
 
-    if (!user) {
-      return emailOrPasswordIncorrect();
+    if (!user || !(await user.checkPassword(password))) {
+      return response
+        .status(401)
+        .json({ error: 'Make sure your password or email are correct' });
     }
 
-    const isSamePassword = await user.checkPassword(password);
-
-    if (!isSamePassword) {
-      return emailOrPasswordIncorrect();
-    }
-    return response.status(201).json({
+    return response.json({
       id: user.id,
+      email: user.email,
       name: user.name,
-      email,
       admin: user.admin,
-      token: jwt.sign({ id: user.id }, authConfig.secret, {
-        expiresIn: 'authConfig.expiresIn',
+      token: Jwt.sign({ id: user.id, name: user.name }, authConfig.secret, {
+        expiresIn: authConfig.expiresIn,
       }),
     });
   }
