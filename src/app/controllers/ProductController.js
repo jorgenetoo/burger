@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import Product from '../models/Product';
-import Categoy from '../models/Category';
+import Category from '../models/Category';
 import User from '../models/User';
 
 class ProductController {
@@ -97,9 +97,9 @@ class ProductController {
     const products = await Product.findAll({
       include: [
         {
-          model: Categoy,
+          model: Category,
           as: 'category',
-          attributes: ['id,name'],
+          attributes: ['id', 'name'],
         },
       ],
     });
